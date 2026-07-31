@@ -1196,6 +1196,10 @@
   from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
 }
+input::placeholder, textarea::placeholder {
+  color: var(--ink);
+  opacity: .62;
+}
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
@@ -2002,7 +2006,10 @@
 
     // color de fondo de la pantalla actual
     const pal = getPalette(palette);
-    const activeColor = screen === "lesson" && question ? blockColor(palette, question.blockId) : screen === "summary" && meta && meta.blockId ? blockColor(palette, meta.blockId) : pal.paper;
+    // Las lecciones que mezclan bloques (diaria y repaso) mantienen el fondo
+    // neutro: el bloque se reconoce por un distintivo de color, no por el fondo.
+    const neutralLesson = !!meta && meta.kind !== "block";
+    const activeColor = screen === "lesson" && question && !neutralLesson ? blockColor(palette, question.blockId) : screen === "summary" && meta && meta.blockId ? blockColor(palette, meta.blockId) : pal.paper;
     return /*#__PURE__*/React.createElement("div", {
       style: {
         ...S.shell,
@@ -2037,6 +2044,7 @@
       onConfirmImport: confirmImport
     }), screen === "lesson" && question && /*#__PURE__*/React.createElement(LessonScreen, {
       palette: palette,
+      neutral: neutralLesson,
       question: question,
       qIndex: qIndex,
       total: questions.length,
@@ -2119,7 +2127,7 @@
     }, "Lección de hoy"), /*#__PURE__*/React.createElement("h1", {
       style: {
         ...S.display,
-        fontSize: 92,
+        fontSize: "clamp(46px, 11vh, 84px)",
         marginTop: 4
       }
     }, DAILY_SIZE, /*#__PURE__*/React.createElement("br", null), "ejer­cicios"), /*#__PURE__*/React.createElement("div", {
@@ -2330,6 +2338,7 @@
   // ---------- Lección ----------
   function LessonScreen({
     palette,
+    neutral,
     question,
     qIndex,
     total,
@@ -2355,9 +2364,11 @@
     const color = blockColor(palette, question.blockId);
     const isChoice = question.type === "mc" || question.type === "gap";
 
-    // al fallar la pantalla se invierte: fondo tinta, texto del color del bloque
-    const bg = wrong ? "var(--ink)" : color;
-    const fg = wrong ? color : "var(--ink)";
+    // En la diaria el fondo es neutro y el bloque se marca con un cuadro de color.
+    // En una leccion de un solo bloque, el color ocupa toda la pantalla.
+    const base = neutral ? "var(--paper)" : color;
+    const bg = wrong ? "var(--ink)" : base;
+    const fg = wrong ? neutral ? "var(--paper)" : color : "var(--ink)";
     return /*#__PURE__*/React.createElement("div", {
       style: {
         ...S.page,
@@ -2391,6 +2402,11 @@
       style: S.chipRow
     }, /*#__PURE__*/React.createElement("span", {
       style: {
+        ...S.swatch,
+        background: color
+      }
+    }), /*#__PURE__*/React.createElement("span", {
+      style: {
         ...S.eyebrow,
         opacity: 1
       }
@@ -2409,7 +2425,7 @@
     }, question.prompt) : question.prompt ? /*#__PURE__*/React.createElement("h2", {
       style: {
         ...S.display,
-        fontSize: 40,
+        fontSize: "clamp(26px, 7.5vw, 38px)",
         marginTop: 8
       }
     }, question.prompt) : null, /*#__PURE__*/React.createElement("div", {
@@ -2501,18 +2517,20 @@
       style: S.chipRow
     }, /*#__PURE__*/React.createElement("span", {
       style: {
+        ...S.swatch,
+        background: color
+      }
+    }), /*#__PURE__*/React.createElement("span", {
+      style: {
         ...S.eyebrow,
         opacity: 1
       }
     }, question.blockTitle), /*#__PURE__*/React.createElement("span", {
-      style: {
-        ...S.levelTag,
-        borderColor: color
-      }
+      style: S.levelTag
     }, question.level)), /*#__PURE__*/React.createElement("h2", {
       style: {
         ...S.display,
-        fontSize: 70,
+        fontSize: "clamp(46px, 14vw, 70px)",
         marginTop: 14
       }
     }, "Casi"), /*#__PURE__*/React.createElement("span", {
@@ -2586,7 +2604,7 @@
     }, "Aciertos"), /*#__PURE__*/React.createElement("div", {
       style: {
         ...S.display,
-        fontSize: 104,
+        fontSize: "clamp(62px, 19vw, 104px)",
         marginTop: 2
       }
     }, accuracy, "%"), /*#__PURE__*/React.createElement("div", {
@@ -2622,7 +2640,7 @@
   const MONO = "'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace";
   const S = {
     shell: {
-      minHeight: "100vh",
+      minHeight: "100dvh",
       display: "flex",
       justifyContent: "center",
       background: "var(--paper)"
@@ -2630,12 +2648,15 @@
     page: {
       width: "100%",
       maxWidth: 460,
-      minHeight: "100vh",
+      minHeight: "100dvh",
       position: "relative",
       overflow: "hidden",
       display: "flex",
       flexDirection: "column",
-      padding: "26px 22px 24px",
+      paddingTop: "max(20px, env(safe-area-inset-top))",
+      paddingBottom: "max(20px, env(safe-area-inset-bottom))",
+      paddingLeft: "max(20px, env(safe-area-inset-left))",
+      paddingRight: "max(20px, env(safe-area-inset-right))",
       fontFamily: MONO,
       transition: "background .35s ease, color .2s ease"
     },
@@ -2694,15 +2715,15 @@
       fontSize: 10,
       letterSpacing: ".16em",
       textTransform: "uppercase",
-      opacity: .6,
+      opacity: .78,
       position: "relative",
       zIndex: 1
     },
     display: {
       fontFamily: DISPLAY,
       textTransform: "uppercase",
-      lineHeight: .87,
-      letterSpacing: "-.015em",
+      lineHeight: .96,
+      letterSpacing: "-.01em",
       margin: 0,
       position: "relative",
       zIndex: 1,
@@ -2711,9 +2732,16 @@
     chipRow: {
       display: "flex",
       alignItems: "center",
-      gap: 10,
+      gap: 9,
       position: "relative",
-      zIndex: 1
+      zIndex: 1,
+      flexWrap: "wrap"
+    },
+    swatch: {
+      width: 12,
+      height: 12,
+      display: "inline-block",
+      flexShrink: 0
     },
     levelTag: {
       fontFamily: MONO,
@@ -2790,7 +2818,7 @@
     optKey: {
       fontSize: 10,
       fontWeight: 700,
-      opacity: .5,
+      opacity: .7,
       minWidth: 12
     },
     gapBox: {
@@ -2848,7 +2876,7 @@
     buildHint: {
       fontFamily: MONO,
       fontSize: 11,
-      opacity: .5,
+      opacity: .7,
       alignSelf: "center"
     },
     wordPicked: {
@@ -2901,8 +2929,8 @@
     },
     answerText: {
       fontFamily: DISPLAY,
-      fontSize: 34,
-      lineHeight: 1.05,
+      fontSize: "clamp(26px, 8vw, 34px)",
+      lineHeight: 1.15,
       marginTop: 6,
       position: "relative",
       zIndex: 1
@@ -2946,7 +2974,7 @@
     metaNum: {
       display: "block",
       fontFamily: DISPLAY,
-      fontSize: 30,
+      fontSize: "clamp(24px, 7vw, 30px)",
       lineHeight: 1
     },
     metaLabel: {
@@ -2954,7 +2982,7 @@
       fontSize: 9,
       letterSpacing: ".12em",
       textTransform: "uppercase",
-      opacity: .6
+      opacity: .8
     },
     tinyBtn: {
       background: "none",
@@ -2965,7 +2993,7 @@
       letterSpacing: ".08em",
       textTransform: "uppercase",
       color: "inherit",
-      opacity: .55,
+      opacity: .8,
       cursor: "pointer",
       textDecoration: "underline"
     },
