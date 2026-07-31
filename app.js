@@ -1102,6 +1102,23 @@
   //  color aquí, se le asigna uno del ciclo automáticamente.
   // ============================================================
   const PALETTES = {
+    mono: {
+      label: "Blanco y negro",
+      ink: "#0A0A0A",
+      paper: "#FFFFFF",
+      // sin color: todos los bloques comparten el mismo fondo blanco
+      cycle: ["#FFFFFF"],
+      blocks: {
+        saludos: "#FFFFFF",
+        comida: "#FFFFFF",
+        familia: "#FFFFFF",
+        viajes: "#FFFFFF",
+        tiempos: "#FFFFFF",
+        condicionales: "#FFFFFF",
+        phrasal: "#FFFFFF",
+        preposiciones: "#FFFFFF"
+      }
+    },
     neon: {
       label: "Neón",
       ink: "#0D0D0D",
@@ -1152,7 +1169,7 @@
     }
   };
   const PALETTE_IDS = Object.keys(PALETTES);
-  const DEFAULT_PALETTE = "neon";
+  const DEFAULT_PALETTE = "mono";
   function getPalette(id) {
     return PALETTES[id] || PALETTES[DEFAULT_PALETTE];
   }
@@ -2640,19 +2657,23 @@ input::placeholder, textarea::placeholder {
   const MONO = "'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace";
   const S = {
     shell: {
-      minHeight: "100dvh",
+      height: "100dvh",
       display: "flex",
       justifyContent: "center",
-      background: "var(--paper)"
+      background: "var(--paper)",
+      overflow: "hidden"
     },
     page: {
       width: "100%",
       maxWidth: 460,
-      minHeight: "100dvh",
+      height: "100dvh",
       position: "relative",
-      overflow: "hidden",
       display: "flex",
       flexDirection: "column",
+      overflowY: "auto",
+      overflowX: "hidden",
+      WebkitOverflowScrolling: "touch",
+      overscrollBehavior: "contain",
       paddingTop: "max(20px, env(safe-area-inset-top))",
       paddingBottom: "max(20px, env(safe-area-inset-bottom))",
       paddingLeft: "max(20px, env(safe-area-inset-left))",
@@ -2741,7 +2762,8 @@ input::placeholder, textarea::placeholder {
       width: 12,
       height: 12,
       display: "inline-block",
-      flexShrink: 0
+      flexShrink: 0,
+      border: "1.5px solid var(--ink)"
     },
     levelTag: {
       fontFamily: MONO,

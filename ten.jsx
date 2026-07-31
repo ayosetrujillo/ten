@@ -577,6 +577,23 @@ const START_HEARTS = 5;
 //  color aquí, se le asigna uno del ciclo automáticamente.
 // ============================================================
 const PALETTES = {
+  mono: {
+    label: "Blanco y negro",
+    ink: "#0A0A0A",
+    paper: "#FFFFFF",
+    // sin color: todos los bloques comparten el mismo fondo blanco
+    cycle: ["#FFFFFF"],
+    blocks: {
+      saludos: "#FFFFFF",
+      comida: "#FFFFFF",
+      familia: "#FFFFFF",
+      viajes: "#FFFFFF",
+      tiempos: "#FFFFFF",
+      condicionales: "#FFFFFF",
+      phrasal: "#FFFFFF",
+      preposiciones: "#FFFFFF",
+    },
+  },
   neon: {
     label: "Neón",
     ink: "#0D0D0D",
@@ -628,7 +645,7 @@ const PALETTES = {
 };
 
 const PALETTE_IDS = Object.keys(PALETTES);
-const DEFAULT_PALETTE = "neon";
+const DEFAULT_PALETTE = "mono";
 
 function getPalette(id) {
   return PALETTES[id] || PALETTES[DEFAULT_PALETTE];
@@ -673,6 +690,10 @@ function globalCss(paletteId) {
 @keyframes ten-ghost {
   from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
+}
+input::placeholder, textarea::placeholder {
+  color: var(--ink);
+  opacity: .62;
 }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
@@ -1436,8 +1457,11 @@ export default function TenApp() {
 
   // color de fondo de la pantalla actual
   const pal = getPalette(palette);
+  // Las lecciones que mezclan bloques (diaria y repaso) mantienen el fondo
+  // neutro: el bloque se reconoce por un distintivo de color, no por el fondo.
+  const neutralLesson = !!meta && meta.kind !== "block";
   const activeColor =
-    screen === "lesson" && question ? blockColor(palette, question.blockId)
+    screen === "lesson" && question && !neutralLesson ? blockColor(palette, question.blockId)
     : screen === "summary" && meta && meta.blockId ? blockColor(palette, meta.blockId)
     : pal.paper;
 
@@ -1466,7 +1490,7 @@ export default function TenApp() {
 
       {screen === "lesson" && question && (
         <LessonScreen
-          palette={palette}
+          palette={palette} neutral={neutralLesson}
           question={question} qIndex={qIndex} total={questions.length}
           hearts={hearts} feedback={feedback} selected={selected} failed={failed}
           buildChoice={buildChoice} buildBank={buildBank}
@@ -1516,7 +1540,7 @@ function HomeScreen({
       <div style={S.ruleHard} />
 
       <span style={S.eyebrow}>Lección de hoy</span>
-      <h1 style={{ ...S.display, fontSize: 92, marginTop: 4 }}>
+      <h1 style={{ ...S.display, fontSize: "clamp(46px, 11vh, 84px)", marginTop: 4 }}>
         {DAILY_SIZE}<br />ejer&shy;cicios
       </h1>
 
@@ -1667,7 +1691,7 @@ function BlockMenu({ palette, level, onPick, onClose }) {
 
 // ---------- Lección ----------
 function LessonScreen({
-  palette, question, qIndex, total, hearts, feedback, selected, failed,
+  palette, neutral, question, qIndex, total, hearts, feedback, selected, failed,
   buildChoice, buildBank, writeValue, onWrite, onSubmitWrite,
   onChoose, onTapBank, onRemoveWord, onReorderWord, onSubmitBuild,
   onMatchDone, onNext, onExit,
@@ -1676,9 +1700,11 @@ function LessonScreen({
   const color = blockColor(palette, question.blockId);
   const isChoice = question.type === "mc" || question.type === "gap";
 
-  // al fallar la pantalla se invierte: fondo tinta, texto del color del bloque
-  const bg = wrong ? "var(--ink)" : color;
-  const fg = wrong ? color : "var(--ink)";
+  // En la diaria el fondo es neutro y el bloque se marca con un cuadro de color.
+  // En una leccion de un solo bloque, el color ocupa toda la pantalla.
+  const base = neutral ? "var(--paper)" : color;
+  const bg = wrong ? "var(--ink)" : base;
+  const fg = wrong ? (neutral ? "var(--paper)" : color) : "var(--ink)";
 
   return (
     <div style={{ ...S.page, background: bg, color: fg, ["--block"]: color }}>
@@ -1693,6 +1719,7 @@ function LessonScreen({
       {!wrong && (
         <div style={{ animation: "ten-in .3s ease both" }}>
           <div style={S.chipRow}>
+            <span style={{ ...S.swatch, background: color }} />
             <span style={{ ...S.eyebrow, opacity: 1 }}>{question.blockTitle}</span>
             <span style={S.levelTag}>{question.level}</span>
           </div>
@@ -1704,7 +1731,7 @@ function LessonScreen({
           {question.type === "gap" ? (
             <div style={S.gapBox}>{question.prompt}</div>
           ) : question.prompt ? (
-            <h2 style={{ ...S.display, fontSize: 40, marginTop: 8 }}>{question.prompt}</h2>
+            <h2 style={{ ...S.display, fontSize: "clamp(26px, 7.5vw, 38px)", marginTop: 8 }}>{question.prompt}</h2>
           ) : null}
 
           <div style={{ height: 18 }} />
@@ -1809,11 +1836,12 @@ function LessonScreen({
       {wrong && (
         <div style={{ animation: "ten-shake .42s ease both" }}>
           <div style={S.chipRow}>
+            <span style={{ ...S.swatch, background: color }} />
             <span style={{ ...S.eyebrow, opacity: 1 }}>{question.blockTitle}</span>
-            <span style={{ ...S.levelTag, borderColor: color }}>{question.level}</span>
+            <span style={S.levelTag}>{question.level}</span>
           </div>
 
-          <h2 style={{ ...S.display, fontSize: 70, marginTop: 14 }}>Casi</h2>
+          <h2 style={{ ...S.display, fontSize: "clamp(46px, 14vw, 70px)", marginTop: 14 }}>Casi</h2>
 
           <span style={{ ...S.eyebrow, display: "block", marginTop: 16 }}>La respuesta era</span>
           <p style={{ ...S.answerText, color: color }}>
@@ -1871,7 +1899,7 @@ function SummaryScreen({ meta, accuracy, xpEarned, streak, errors, onHome }) {
 
       <div style={S.grow} />
       <span style={S.eyebrow}>Aciertos</span>
-      <div style={{ ...S.display, fontSize: 104, marginTop: 2 }}>{accuracy}%</div>
+      <div style={{ ...S.display, fontSize: "clamp(62px, 19vw, 104px)", marginTop: 2 }}>{accuracy}%</div>
       <div style={S.rule} />
       <div style={S.metaRow}>
         <div><b style={S.metaNum}>+{xpEarned}</b><span style={S.metaLabel}>XP</span></div>
@@ -1896,10 +1924,19 @@ const DISPLAY = "'Anton', Impact, 'Arial Narrow', sans-serif";
 const MONO = "'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace";
 
 const S = {
-  shell: { minHeight: "100vh", display: "flex", justifyContent: "center", background: "var(--paper)" },
+  shell: {
+    height: "100dvh", display: "flex", justifyContent: "center",
+    background: "var(--paper)", overflow: "hidden",
+  },
   page: {
-    width: "100%", maxWidth: 460, minHeight: "100vh", position: "relative", overflow: "hidden",
-    display: "flex", flexDirection: "column", padding: "26px 22px 24px",
+    width: "100%", maxWidth: 460, height: "100dvh", position: "relative",
+    display: "flex", flexDirection: "column",
+    overflowY: "auto", overflowX: "hidden",
+    WebkitOverflowScrolling: "touch", overscrollBehavior: "contain",
+    paddingTop: "max(20px, env(safe-area-inset-top))",
+    paddingBottom: "max(20px, env(safe-area-inset-bottom))",
+    paddingLeft: "max(20px, env(safe-area-inset-left))",
+    paddingRight: "max(20px, env(safe-area-inset-right))",
     fontFamily: MONO, transition: "background .35s ease, color .2s ease",
   },
   grow: { flex: 1, minHeight: 12 },
@@ -1912,10 +1949,11 @@ const S = {
   ruleHard: { height: 2, background: "var(--ink)", margin: "12px 0 16px", position: "relative", zIndex: 1 },
   rule: { height: 1, background: "currentColor", opacity: .3, margin: "16px 0", position: "relative", zIndex: 1 },
 
-  eyebrow: { fontFamily: MONO, fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", opacity: .6, position: "relative", zIndex: 1 },
-  display: { fontFamily: DISPLAY, textTransform: "uppercase", lineHeight: .87, letterSpacing: "-.015em", margin: 0, position: "relative", zIndex: 1, hyphens: "manual" },
+  eyebrow: { fontFamily: MONO, fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", opacity: .78, position: "relative", zIndex: 1 },
+  display: { fontFamily: DISPLAY, textTransform: "uppercase", lineHeight: .96, letterSpacing: "-.01em", margin: 0, position: "relative", zIndex: 1, hyphens: "manual" },
 
-  chipRow: { display: "flex", alignItems: "center", gap: 10, position: "relative", zIndex: 1 },
+  chipRow: { display: "flex", alignItems: "center", gap: 9, position: "relative", zIndex: 1, flexWrap: "wrap" },
+  swatch: { width: 12, height: 12, display: "inline-block", flexShrink: 0, border: "1.5px solid var(--ink)" },
   levelTag: { fontFamily: MONO, fontSize: 10, fontWeight: 700, border: "1px solid currentColor", padding: "1px 6px", letterSpacing: ".08em" },
 
   levelRow: { display: "flex", border: "2px solid var(--ink)", position: "relative", zIndex: 1 },
@@ -1938,7 +1976,7 @@ const S = {
     padding: "15px 0", fontFamily: MONO, fontSize: 14, color: "var(--ink)", cursor: "pointer",
     transition: "background .12s ease",
   },
-  optKey: { fontSize: 10, fontWeight: 700, opacity: .5, minWidth: 12 },
+  optKey: { fontSize: 10, fontWeight: 700, opacity: .7, minWidth: 12 },
 
   gapBox: { border: "2px solid var(--ink)", padding: "18px 16px", fontFamily: MONO, fontSize: 17, lineHeight: 1.55, marginTop: 10, position: "relative", zIndex: 1 },
   gapGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", border: "2px solid var(--ink)", borderBottom: 0, position: "relative", zIndex: 1 },
@@ -1954,7 +1992,7 @@ const S = {
   },
 
   buildRow: { display: "flex", flexWrap: "wrap", gap: 8, minHeight: 46, borderBottom: "2px solid var(--ink)", paddingBottom: 12, position: "relative", zIndex: 1 },
-  buildHint: { fontFamily: MONO, fontSize: 11, opacity: .5, alignSelf: "center" },
+  buildHint: { fontFamily: MONO, fontSize: 11, opacity: .7, alignSelf: "center" },
   wordPicked: { background: "var(--ink)", color: "var(--block)", border: "none", padding: "8px 12px", fontFamily: MONO, fontSize: 13, fontWeight: 700, cursor: "grab" },
   bankRow: { display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14, position: "relative", zIndex: 1 },
   wordBank: { background: "transparent", color: "var(--ink)", border: "1px solid var(--ink)", padding: "8px 12px", fontFamily: MONO, fontSize: 13, cursor: "pointer" },
@@ -1963,7 +2001,7 @@ const S = {
   matchCol: { display: "flex", flexDirection: "column", gap: 8 },
   matchCell: { border: "1px solid var(--ink)", padding: "12px 10px", fontFamily: MONO, fontSize: 12, textAlign: "left", cursor: "pointer", transition: "background .12s ease" },
 
-  answerText: { fontFamily: DISPLAY, fontSize: 34, lineHeight: 1.05, marginTop: 6, position: "relative", zIndex: 1 },
+  answerText: { fontFamily: DISPLAY, fontSize: "clamp(26px, 8vw, 34px)", lineHeight: 1.15, marginTop: 6, position: "relative", zIndex: 1 },
   explainText: { fontFamily: MONO, fontSize: 12, lineHeight: 1.7, position: "relative", zIndex: 1 },
 
   livesRow: { display: "flex", alignItems: "baseline", gap: 12, position: "relative", zIndex: 1 },
@@ -1975,9 +2013,9 @@ const S = {
   },
 
   metaRow: { display: "flex", gap: 26, alignItems: "flex-end", position: "relative", zIndex: 1 },
-  metaNum: { display: "block", fontFamily: DISPLAY, fontSize: 30, lineHeight: 1 },
-  metaLabel: { fontFamily: MONO, fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", opacity: .6 },
-  tinyBtn: { background: "none", border: "none", padding: 0, fontFamily: MONO, fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "inherit", opacity: .55, cursor: "pointer", textDecoration: "underline" },
+  metaNum: { display: "block", fontFamily: DISPLAY, fontSize: "clamp(24px, 7vw, 30px)", lineHeight: 1 },
+  metaLabel: { fontFamily: MONO, fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", opacity: .8 },
+  tinyBtn: { background: "none", border: "none", padding: 0, fontFamily: MONO, fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "inherit", opacity: .8, cursor: "pointer", textDecoration: "underline" },
 
   note: { marginTop: 12, fontFamily: MONO, fontSize: 11, letterSpacing: ".06em", textTransform: "uppercase", position: "relative", zIndex: 1 },
 

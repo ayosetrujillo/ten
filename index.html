@@ -36,10 +36,20 @@
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; padding: 0; background: #0D0D0D; min-height: 100vh; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #0D0D0D;
+    height: 100%;
+    overflow: hidden;         /* nada de scroll ni rebote fuera de la app */
+    position: fixed;
+    inset: 0;
+    overscroll-behavior: none;
+  }
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
   body {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
     overscroll-behavior-y: contain;
   }
   button, input, textarea { font-family: inherit; }
