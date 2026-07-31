@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+<title>T-EN</title>
+<meta name="description" content="Diez ejercicios de inglés al día. Niveles A1 a C2." />
+
+<!-- Para que se abra como app desde la pantalla de inicio del iPhone -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="T-EN" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#0D0D0D" />
+
+<link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+<link rel="manifest" href="./manifest.json" />
+
+<style>
+  /* Tipografías propias: no dependemos de ningún servidor externo */
+  @font-face {
+    font-family: 'Anton';
+    src: url('./anton.woff2') format('woff2');
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url('./mono-400.woff2') format('woff2');
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url('./mono-700.woff2') format('woff2');
+    font-weight: 700; font-style: normal; font-display: swap;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: #0D0D0D; min-height: 100vh; }
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    overscroll-behavior-y: contain;
+  }
+  button, input, textarea { font-family: inherit; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible {
+    outline: 3px solid currentColor; outline-offset: 2px;
+  }
+  #loading {
+    color: #F2F0EB; font-family: ui-monospace, monospace; font-size: 12px;
+    letter-spacing: .16em; text-transform: uppercase; padding: 60px 22px;
+  }
+</style>
+</head>
+<body>
+<div id="root"><div id="loading">T-EN · cargando</div></div>
+
+<script src="./react.min.js"></script>
+<script src="./react-dom.min.js"></script>
+<script src="./app.js"></script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("./sw.js").catch(function (e) {
+      console.log("Service worker no registrado:", e);
+    });
+  });
+}
+</script>
+</body>
+</html>
