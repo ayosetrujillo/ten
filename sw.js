@@ -1,7 +1,7 @@
 // Service worker de T-EN
 // Permite abrir la app sin conexión. IMPORTANTE: sube el número de VERSION
 // cada vez que publiques cambios, o los móviles seguirán viendo la versión vieja.
-const VERSION = "ten-v3";
+const VERSION = "ten-v4";
 
 const ASSETS = [
   "./", "./index.html", "./app.js",

@@ -1187,6 +1187,7 @@
   function globalCss(paletteId) {
     const pal = getPalette(paletteId);
     return `
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&display=swap');
 
 :root {
   --ink: ${pal.ink};
@@ -2440,11 +2441,7 @@ input::placeholder, textarea::placeholder {
     }, question.eyebrow), question.type === "gap" ? /*#__PURE__*/React.createElement("div", {
       style: S.gapBox
     }, question.prompt) : question.prompt ? /*#__PURE__*/React.createElement("h2", {
-      style: {
-        ...S.display,
-        fontSize: "clamp(26px, 7.5vw, 38px)",
-        marginTop: 8
-      }
+      style: S.examText
     }, question.prompt) : null, /*#__PURE__*/React.createElement("div", {
       style: {
         height: 18
@@ -2545,11 +2542,7 @@ input::placeholder, textarea::placeholder {
     }, question.blockTitle), /*#__PURE__*/React.createElement("span", {
       style: S.levelTag
     }, question.level)), /*#__PURE__*/React.createElement("h2", {
-      style: {
-        ...S.display,
-        fontSize: "clamp(46px, 14vw, 70px)",
-        marginTop: 14
-      }
+      style: S.failWord
     }, "Casi"), /*#__PURE__*/React.createElement("span", {
       style: {
         ...S.eyebrow,
@@ -2749,6 +2742,28 @@ input::placeholder, textarea::placeholder {
       position: "relative",
       zIndex: 1,
       hyphens: "manual"
+    },
+    // Texto de lectura dentro del ejercicio: mono en vez de la tipografía de
+    // cartel, para que frases largas se lean cómodas y no compitan con las opciones.
+    examText: {
+      fontFamily: MONO,
+      fontWeight: 700,
+      fontSize: "clamp(21px, 6.4vw, 28px)",
+      lineHeight: 1.4,
+      letterSpacing: 0,
+      margin: "8px 0 0",
+      position: "relative",
+      zIndex: 1
+    },
+    failWord: {
+      fontFamily: MONO,
+      fontWeight: 700,
+      fontSize: "clamp(30px, 9vw, 42px)",
+      lineHeight: 1.2,
+      letterSpacing: 0,
+      margin: "14px 0 0",
+      position: "relative",
+      zIndex: 1
     },
     chipRow: {
       display: "flex",
@@ -2950,9 +2965,10 @@ input::placeholder, textarea::placeholder {
       transition: "background .12s ease"
     },
     answerText: {
-      fontFamily: DISPLAY,
-      fontSize: "clamp(26px, 8vw, 34px)",
-      lineHeight: 1.15,
+      fontFamily: MONO,
+      fontWeight: 700,
+      fontSize: "clamp(22px, 7vw, 30px)",
+      lineHeight: 1.35,
       marginTop: 6,
       position: "relative",
       zIndex: 1

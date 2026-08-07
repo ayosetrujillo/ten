@@ -1731,7 +1731,7 @@ function LessonScreen({
           {question.type === "gap" ? (
             <div style={S.gapBox}>{question.prompt}</div>
           ) : question.prompt ? (
-            <h2 style={{ ...S.display, fontSize: "clamp(26px, 7.5vw, 38px)", marginTop: 8 }}>{question.prompt}</h2>
+            <h2 style={S.examText}>{question.prompt}</h2>
           ) : null}
 
           <div style={{ height: 18 }} />
@@ -1841,7 +1841,7 @@ function LessonScreen({
             <span style={S.levelTag}>{question.level}</span>
           </div>
 
-          <h2 style={{ ...S.display, fontSize: "clamp(46px, 14vw, 70px)", marginTop: 14 }}>Casi</h2>
+          <h2 style={S.failWord}>Casi</h2>
 
           <span style={{ ...S.eyebrow, display: "block", marginTop: 16 }}>La respuesta era</span>
           <p style={{ ...S.answerText, color: color }}>
@@ -1951,6 +1951,16 @@ const S = {
 
   eyebrow: { fontFamily: MONO, fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", opacity: .78, position: "relative", zIndex: 1 },
   display: { fontFamily: DISPLAY, textTransform: "uppercase", lineHeight: .96, letterSpacing: "-.01em", margin: 0, position: "relative", zIndex: 1, hyphens: "manual" },
+  // Texto de lectura dentro del ejercicio: mono en vez de la tipografía de
+  // cartel, para que frases largas se lean cómodas y no compitan con las opciones.
+  examText: {
+    fontFamily: MONO, fontWeight: 700, fontSize: "clamp(21px, 6.4vw, 28px)",
+    lineHeight: 1.4, letterSpacing: 0, margin: "8px 0 0", position: "relative", zIndex: 1,
+  },
+  failWord: {
+    fontFamily: MONO, fontWeight: 700, fontSize: "clamp(30px, 9vw, 42px)",
+    lineHeight: 1.2, letterSpacing: 0, margin: "14px 0 0", position: "relative", zIndex: 1,
+  },
 
   chipRow: { display: "flex", alignItems: "center", gap: 9, position: "relative", zIndex: 1, flexWrap: "wrap" },
   swatch: { width: 12, height: 12, display: "inline-block", flexShrink: 0, border: "1.5px solid var(--ink)" },
@@ -2001,7 +2011,7 @@ const S = {
   matchCol: { display: "flex", flexDirection: "column", gap: 8 },
   matchCell: { border: "1px solid var(--ink)", padding: "12px 10px", fontFamily: MONO, fontSize: 12, textAlign: "left", cursor: "pointer", transition: "background .12s ease" },
 
-  answerText: { fontFamily: DISPLAY, fontSize: "clamp(26px, 8vw, 34px)", lineHeight: 1.15, marginTop: 6, position: "relative", zIndex: 1 },
+  answerText: { fontFamily: MONO, fontWeight: 700, fontSize: "clamp(22px, 7vw, 30px)", lineHeight: 1.35, marginTop: 6, position: "relative", zIndex: 1 },
   explainText: { fontFamily: MONO, fontSize: 12, lineHeight: 1.7, position: "relative", zIndex: 1 },
 
   livesRow: { display: "flex", alignItems: "baseline", gap: 12, position: "relative", zIndex: 1 },
